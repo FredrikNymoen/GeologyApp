@@ -11,7 +11,7 @@ class MainMenu{
         "5 - Shut down application"
     )
 
-    fun showAndRead(): MenuAction {
+    fun run(): MenuAction {
         Input.showMenu("Main Menu", mainMenuList)
         return when (Input.choice()) {
             "1" -> MenuAction.Locations
@@ -19,7 +19,7 @@ class MainMenu{
             "3" -> MenuAction.Workers
             "4" -> MenuAction.UpdateWorkers
             "5" -> MenuAction.Exit
-            else -> { println("Invalid choice"); showAndRead() }
+            else -> { println("Invalid choice"); run() }
         }
     }
 

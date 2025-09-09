@@ -5,8 +5,7 @@ import org.example.services.MineralService
 import org.example.ui.LocationMenu
 import org.example.ui.MainMenu
 import org.example.ui.MenuAction
-import org.example.ui.MineralMenu
-import org.example.utils.MineralLoader
+import org.example.ui.mineral.MineralMenu
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
@@ -19,7 +18,7 @@ fun main() {
     val locationMenu = LocationMenu(locationService)
 
     while (true) {
-        when (mainMenu.showAndRead()){
+        when (mainMenu.run()){
             MenuAction.Locations -> locationMenu.run()
             MenuAction.Minerals -> mineralMenu.run()
             MenuAction.Workers -> println("Workers")
@@ -27,7 +26,4 @@ fun main() {
             MenuAction.Exit -> return
         }
     }
-
-
-
 }
