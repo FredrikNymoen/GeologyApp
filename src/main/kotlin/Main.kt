@@ -1,16 +1,33 @@
 package org.example
 
+import org.example.services.LocationService
+import org.example.services.MineralService
+import org.example.ui.LocationMenu
+import org.example.ui.MainMenu
+import org.example.ui.MenuAction
+import org.example.ui.MineralMenu
+import org.example.utils.MineralLoader
+
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 fun main() {
-    val name = "Kotlin"
-    //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-    // to see how IntelliJ IDEA suggests fixing it.
-    println("Hello, " + name + "!")
+    val mineralService = MineralService()
+    val locationService = LocationService()
 
-    for (i in 1..5) {
-        //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-        // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-        println("i = $i")
+    val mainMenu = MainMenu()
+    val mineralMenu = MineralMenu(mineralService)
+    val locationMenu = LocationMenu(locationService)
+
+    while (true) {
+        when (mainMenu.showAndRead()){
+            MenuAction.Locations -> locationMenu.run()
+            MenuAction.Minerals -> mineralMenu.run()
+            MenuAction.Workers -> println("Workers")
+            MenuAction.UpdateWorkers -> println("Update workers")
+            MenuAction.Exit -> return
+        }
     }
+
+
+
 }

@@ -1,0 +1,11 @@
+Name        Luster 			Color 			Hardness 	Fracture
+Amethyst 	Vitreous/Glassy		Purple 			7 		Conchoidal
+Garnet 		Vitreous/Resinous 	Varying 		6.5-7.5 	Conchoidal
+Kyanite 	Vitreous/Pearly 	Blue 			5-7 		Splintery
+Cinnabar 	Adamantine 		Red 			2.5 		Uneven
+Diamond 	Adamantine 		Varying			10 		Conchoidal
+Gypsum 		Vitreous/Pearly/Silky 	Varying			2		Fibrous
+Copper		Metallic		Red			2.5-3		Hackly
+Muscovite	Vitreous/Pearly/Silky	Colorless		2-2.5		Uneven
+Aragonite	Vitreous		White/Yellow		3.5-4		Subconchoidal
+Talc		Pearly/Greasy		White/Green		1		Uneven
