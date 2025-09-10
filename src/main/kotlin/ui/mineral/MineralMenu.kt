@@ -18,6 +18,7 @@ class MineralMenu(
         "8 - Return to main menu",
     )
 
+
     fun run() {
         while (true) {
             // Show menu and read choice

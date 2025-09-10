@@ -1,4 +1,4 @@
-package org.example.ui
+package org.example.ui.location
 
 import org.example.services.LocationService
 import org.example.utils.Input
