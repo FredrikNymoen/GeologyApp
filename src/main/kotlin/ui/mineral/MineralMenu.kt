@@ -1,47 +1,53 @@
 package org.example.ui.mineral
 
+import org.example.actions.MainMenuAction
+import org.example.actions.MineralMenuAction
 import org.example.services.MineralService
-import org.example.utils.Input
+import org.example.ui.common.ConsoleIO
+import org.example.utils.fromInput
 import kotlin.io.println
 
 class MineralMenu(
     val mineralService: MineralService
 ){
-    private val mineralMenuList = listOf(
-        "1 - List all minerals",
-        "2 - Sort all minerals A-Z",
-        "3 - Search for mineral by name",
-        "4 - Filter minerals",
-        "5 - Add mineral",
-        "6 - Update mineral",
-        "7 - Delete mineral",
-        "8 - Return to main menu",
-    )
+    private val addMineralMenu = AddMineralMenu(mineralService)
+    private val updateMineralMenu = UpdateMineralMenu(mineralService)
+    private val filterMineralMenu = FilterMineralMenu(mineralService)
+
 
 
     fun run() {
+        val options = MineralMenuAction.entries.map { "${it.shortcut} - ${it.label}" }
         while (true) {
             // Show menu and read choice
-            Input.showMenu("Mineral Menu", mineralMenuList)
-            when (Input.choice()) {
+            ConsoleIO.showMenu("Main Menu", options)
+            val choice = ConsoleIO.choice()
+
+            val action = fromInput<MineralMenuAction>(choice)
+            if (action == null) {
+                println("Invalid choice. Please try again.")
+                continue
+            }
+
+            when (action) {
                 // 1) List all
-                "1" -> {
+                MineralMenuAction.ListAll -> {
                     val all = mineralService.listAll()
                     if (all.isEmpty()) println("No minerals found.")
                     else all.forEachIndexed { i, m -> println("${i + 1}. $m") } // uses Mineral.toString()
                 }
 
                 // 2) Sort A–Z
-                "2" -> {
+                MineralMenuAction.SortAZ -> {
                     val sorted = mineralService.sortByName()
                     if (sorted.isEmpty()) println("No minerals found.")
                     else sorted.forEachIndexed { i, m -> println("${i + 1}. $m") }
                 }
 
                 // 3) Search by exact name
-                "3" -> {
+                MineralMenuAction.SearchByName -> {
                     print("Name to search: ")
-                    val q = Input.choice()
+                    val q = ConsoleIO.choice()
                     val hits = mineralService.searchByName(q)
                     if (hits.isEmpty()) {
                         println("No matches.")
@@ -53,32 +59,30 @@ class MineralMenu(
                 }
 
                 // 4) Filter (blank = ignore)
-                "4" -> {
-                    FilterMineralMenu(mineralService).run()
+                MineralMenuAction.Filter -> {
+                    filterMineralMenu.run()
                 }
 
                 // 5) Add mineral
-                "5" -> {
-                    AddMineralMenu(mineralService).run()
+                MineralMenuAction.Add -> {
+                    addMineralMenu.run()
                 }
 
                 // 6) Update mineral (opens the dedicated update flow)
-                "6" -> {
-                    UpdateMineralMenu(mineralService).run()
+                MineralMenuAction.Update -> {
+                    updateMineralMenu.run()
                 }
 
                 // 7) Delete mineral by name
-                "7" -> {
+                MineralMenuAction.Delete -> {
                     print("Name to delete: ")
-                    val q = Input.choice()
+                    val q = ConsoleIO.choice()
                     val removed = mineralService.deleteByName(q)
                     println(if (removed) "Deleted '$q'." else "No mineral found with name '$q'.")
                 }
 
                 // 8) Back
-                "8" -> return
-
-                else -> println("Invalid choice. Please try again.")
+                MineralMenuAction.Back -> return
             }
         }
     }

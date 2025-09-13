@@ -61,9 +61,16 @@ class MineralService (
         val nameOk = nameContains.isNullOrBlank() || (m.name ?: "").contains(nameContains, true)
         val colorOk = color.isNullOrBlank() || m.color.any { it.equals(color, true) }
         val fracOk  = fracture.isNullOrBlank() || (m.fracture ?: "").equals(fracture, true)
-        val hardOk  = hardnessValue == null ||
-                (m.hardnessMin != null && m.hardnessMax != null &&
-                        hardnessValue in m.hardnessMin!!..m.hardnessMax!!)
+
+        val hardOk = when {
+            hardnessValue == null -> true
+            m.hardnessMin != null && m.hardnessMax != null ->
+                hardnessValue in m.hardnessMin!!..m.hardnessMax!!
+            m.hardnessMin != null -> hardnessValue >= m.hardnessMin!!
+            m.hardnessMax != null -> hardnessValue <= m.hardnessMax!!
+            else -> true // no hardness info at all
+        }
+
         nameOk && colorOk && fracOk && hardOk
     }
 }

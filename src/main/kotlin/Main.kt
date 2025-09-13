@@ -4,7 +4,7 @@ import org.example.services.LocationService
 import org.example.services.MineralService
 import org.example.ui.location.LocationMenu
 import org.example.ui.MainMenu
-import org.example.ui.MenuAction
+import org.example.actions.MainMenuAction
 import org.example.ui.mineral.MineralMenu
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
@@ -17,7 +17,6 @@ fun main() {
     val mineralService = MineralService()
     val locationService = LocationService()
 
-    val mainMenu = MainMenu()
     val mineralMenu = MineralMenu(mineralService)
     val locationMenu = LocationMenu(locationService)
 
@@ -26,12 +25,12 @@ fun main() {
      * Show main menu and call sub-menus or exit based on user choice
      */
     while (true) {
-        when (mainMenu.run()){
-            MenuAction.Locations -> locationMenu.run()
-            MenuAction.Minerals -> mineralMenu.run()
-            MenuAction.Workers -> println("Workers")
-            MenuAction.UpdateWorkers -> println("Update workers")
-            MenuAction.Exit -> return
+        when (MainMenu.run()){
+            MainMenuAction.Locations -> locationMenu.run()
+            MainMenuAction.Minerals -> mineralMenu.run()
+            MainMenuAction.Workers -> println("Workers")
+            MainMenuAction.UpdateWorkers -> println("Update workers")
+            MainMenuAction.Exit -> return
         }
     }
 }

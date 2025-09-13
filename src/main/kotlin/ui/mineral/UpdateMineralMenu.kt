@@ -2,7 +2,7 @@ package org.example.ui.mineral
 
 import org.example.models.Mineral
 import org.example.services.MineralService
-import org.example.utils.Input
+import org.example.ui.common.ConsoleIO
 
 /**
  * Separate update flow for a single Mineral.
@@ -14,9 +14,9 @@ class UpdateMineralMenu(private val service: MineralService) {
             val list = service.listAll()
             if (list.isEmpty()) { println("No minerals to update."); return }
 
-            val items = list.mapIndexed { i, m -> "${i + 1} - ${m.name ?: "(unknown)"}" } + "B - Back"
-            Input.showMenu("Update Mineral", items)
-            val pick = Input.choice()
+            val items = list.mapIndexed { i, m -> "${i + 1} - ${m.name ?: "(unknown)"}" } + "B - Go back"
+            ConsoleIO.showMenu("Update Mineral", items)
+            val pick = ConsoleIO.choice()
             if (pick.equals("b", true)) return
 
             val idx = pick.toIntOrNull()?.minus(1)
@@ -31,7 +31,7 @@ class UpdateMineralMenu(private val service: MineralService) {
 
             fun ask(label: String, hint: String): String {
                 print("$label [$hint]: ")
-                return Input.choice()
+                return ConsoleIO.choice()
             }
 
             edit@ while (true) {
@@ -93,7 +93,7 @@ class UpdateMineralMenu(private val service: MineralService) {
                 println(preview)
 
                 print("\nSave changes? [y]es / [e]dit again / [c]ancel: ")
-                when (Input.choice().lowercase()) {
+                when (ConsoleIO.choice()) {
                     "y", "yes" -> {
                         val ok = service.update(idx) { m ->
                             m.name = proposedName

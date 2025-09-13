@@ -1,21 +1,23 @@
 package org.example.ui.mineral
 
+import org.example.actions.FilterMenuAction
 import org.example.services.MineralService
-import org.example.utils.Input
+import org.example.ui.common.ConsoleIO
+import org.example.utils.fromInput
 
-/**
- * Interactive filtering: lets you refine criteria until you're done.
- * Blank input = ignore that criterion.
- */
 class FilterMineralMenu(private val service: MineralService) {
 
     fun run() {
+        // State for filters (nullable means "ignore")
         var nameContains: String? = null
         var color: String? = null
         var fracture: String? = null
         var hardness: Double? = null
 
+
+        val options = FilterMenuAction.entries.map { "${it.shortcut} - ${it.label}" }
         loop@ while (true) {
+            // Show current filter state
             println("\n=== Filter Minerals ===")
             println("Current filters -> " +
                     "nameContains=${nameContains ?: "-"}, " +
@@ -23,25 +25,37 @@ class FilterMineralMenu(private val service: MineralService) {
                     "fracture=${fracture ?: "-"}, " +
                     "hardness=${hardness ?: "-"}")
 
-            println(
-                "1 - Set nameContains\n" +
-                        "2 - Set color (exact)\n" +
-                        "3 - Set fracture (exact)\n" +
-                        "4 - Set hardness value (e.g. 6.8)\n" +
-                        "5 - Run filter\n" +
-                        "6 - Clear all filters\n" +
-                        "7 - Back"
-            )
-            print("Choose: ")
-            when (Input.choice()) {
-                "1" -> { print("Name contains (blank=ignore): "); nameContains = Input.choice().ifBlank { null } }
-                "2" -> { print("Color (exact, blank=ignore): "); color = Input.choice().ifBlank { null } }
-                "3" -> { print("Fracture (exact, blank=ignore): "); fracture = Input.choice().ifBlank { null } }
-                "4" -> {
-                    print("Hardness value (blank=ignore): ")
-                    hardness = Input.choice().toDoubleOrNull()
+            // Generate menu lines directly from the enum
+            ConsoleIO.showMenu("Filter Menu", options)
+
+            // Read user choice and convert to enum action
+            val choice = ConsoleIO.choice().trim()
+            val action = fromInput<FilterMenuAction>(choice)
+            if (action == null) {
+                println("Invalid choice.")
+                continue@loop
+            }
+
+            // Handle user action
+            when (action) {
+                FilterMenuAction.SetName -> {
+                    print("Name contains (blank=ignore): ")
+                    nameContains = ConsoleIO.choice().ifBlank { null }
                 }
-                "5" -> {
+                FilterMenuAction.SetColor -> {
+                    print("Color (exact, blank=ignore): ")
+                    color = ConsoleIO.choice().ifBlank { null }
+                }
+                FilterMenuAction.SetFracture -> {
+                    print("Fracture (exact, blank=ignore): ")
+                    fracture = ConsoleIO.choice().ifBlank { null }
+                }
+                FilterMenuAction.SetHardness -> {
+                    print("Hardness value (blank=ignore): ")
+                    hardness = ConsoleIO.choice().toDoubleOrNull()
+                }
+                FilterMenuAction.RunFilter -> {
+                    // Call service with current filters
                     val results = service.filter(
                         nameContains = nameContains,
                         color = color,
@@ -51,16 +65,22 @@ class FilterMineralMenu(private val service: MineralService) {
                     if (results.isEmpty()) println("No matches.")
                     else results.forEachIndexed { i, m -> println("${i + 1}. $m") }
 
-                    // After showing results, ask to refine or go back
-                    print("\nRefine filters? [y]es / [n]o: ")
-                    when (Input.choice().lowercase()) {
+                    // After showing results, let the user refine or exit
+                    print("\nRefine filters? [y/yes = yes, anything else = no]: ")
+                    when (ConsoleIO.choice()) {
                         "y", "yes" -> continue@loop
                         else -> return
                     }
                 }
-                "6" -> { nameContains = null; color = null; fracture = null; hardness = null; println("Filters cleared.") }
-                "7" -> return
-                else -> println("Invalid choice.")
+                FilterMenuAction.Clear -> {
+                    // Reset all filters
+                    nameContains = null
+                    color = null
+                    fracture = null
+                    hardness = null
+                    println("Filters cleared.")
+                }
+                FilterMenuAction.Back -> return
             }
         }
     }
