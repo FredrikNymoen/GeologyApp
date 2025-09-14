@@ -1,7 +1,7 @@
 package org.example.ui.mineral
 
 import org.example.actions.MainMenuAction
-import org.example.actions.MineralMenuAction
+import org.example.actions.mineral.MineralMenuAction
 import org.example.services.MineralService
 import org.example.ui.common.ConsoleIO
 import org.example.utils.fromInput

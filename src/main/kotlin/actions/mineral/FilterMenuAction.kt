@@ -1,4 +1,6 @@
-package org.example.actions
+package org.example.actions.mineral
+
+import org.example.actions.MenuAction
 
 enum class FilterMenuAction(
     override val label: String,
