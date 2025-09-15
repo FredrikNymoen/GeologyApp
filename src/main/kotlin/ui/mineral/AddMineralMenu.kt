@@ -1,9 +1,12 @@
 package org.example.ui.mineral
 
 import org.example.actions.ConfirmationAction
+import org.example.actions.mineral.AddMineralMenuAction
+import org.example.actions.mineral.MineralMenuAction
 import org.example.models.Mineral
 import org.example.services.MineralService
 import org.example.ui.common.ConsoleIO
+import org.example.utils.fromInput
 
 /**
  * Handles adding a new Mineral with validation and confirmation.
@@ -12,21 +15,51 @@ import org.example.ui.common.ConsoleIO
  */
 class AddMineralMenu(
     private val service: MineralService,
-    private val afterSave: ((Mineral) -> Unit)? = null
+    private val afterSave: ((Mineral) -> Unit)? = null, // callback after saving
+    private val allowSelectExisting: Boolean = false
 ) {
 
-    // Helper to parse comma- or slash-separated lists
-    private fun parseList(input: String): List<String> =
-        input.split(Regex("[,/]"))
-            .map { it.trim() }
-            .filter { it.isNotEmpty() }
 
+    private val options = AddMineralMenuAction.entries.map { "${it.shortcut} - ${it.label}" }
     fun run() {
+        // If enabled, offer to select an existing mineral first.
+        if (allowSelectExisting) {
+            when (promptMode()) {
+                AddMineralMenuAction.SelectExisting -> {
+                    val selected = selectExisting() ?: return
+                    // Do NOT add to service; it already exists. Just notify caller (e.g., link to location).
+                    afterSave?.invoke(selected)
+                    println("Selected existing:\n$selected")
+                    return
+                }
+                AddMineralMenuAction.CreateNew -> {
+                    // fall through to creation loop
+                }
+                AddMineralMenuAction.Cancel -> {
+                    println("Canceled.")
+                    return
+                }
+            }
+        }
+
         while (true) {
             val candidate = buildMineral() ?: continue
             if (confirmAndSave(candidate)) return
         }
     }
+
+    /** Ask the user which mode they want. */
+    private fun promptMode(): AddMineralMenuAction {
+        while (true) {
+            ConsoleIO.showMenu("Add/Select Mineral", options)
+            val choice = ConsoleIO.choice()
+            val action = fromInput<AddMineralMenuAction>(choice)
+            if (action != null) return action
+            println("Invalid choice. Please try again.")
+        }
+    }
+
+
 
     // Collect and validate user input, then build a Mineral candidate.
 // Returns null if input was invalid (so loop can continue).
@@ -46,8 +79,8 @@ class AddMineralMenu(
         val maxIn      = ask("Hardness MAX (1..10)")
         val fractureIn = ask("Fracture").ifBlank { null }
 
-        val lusterList = if (lusterIn.isBlank()) emptyList() else parseList(lusterIn)
-        val colorList  = if (colorIn.isBlank()) emptyList() else parseList(colorIn)
+        val lusterList = if (lusterIn.isBlank()) emptyList() else ConsoleIO.parseList(lusterIn)
+        val colorList  = if (colorIn.isBlank()) emptyList() else ConsoleIO.parseList(colorIn)
 
         val (hMin, hMax) = validateHardness(minIn, maxIn) ?: return null
 
@@ -107,6 +140,41 @@ class AddMineralMenu(
                 false
             }
         }
+    }
+
+    /** Let the user select an existing mineral by index or by exact name (case-insensitive). */
+    private fun selectExisting(): Mineral? {
+        val all = service.listAll()
+        if (all.isEmpty()) {
+            println("No minerals in the catalog yet.")
+            return null
+        }
+
+        println("\n--- Existing minerals ---")
+        all.forEachIndexed { i, m ->
+            val label = m.name ?: "(unknown)"
+            println("${i + 1}. $label")
+        }
+        println("-------------------------")
+
+        val raw = ConsoleIO.prompt("Enter number or name (blank to cancel)")
+        if (raw.isBlank()) {
+            println("Canceled.")
+            return null
+        }
+
+        // Try by number
+        val idx = raw.toIntOrNull()
+        if (idx != null && idx in 1..all.size) {
+            return all[idx - 1]
+        }
+
+        // Try by exact name (ignore case)
+        val byName = all.firstOrNull { it.name?.equals(raw, ignoreCase = true) == true }
+        if (byName != null) return byName
+
+        println("Not found: '$raw'.")
+        return null
     }
 
 

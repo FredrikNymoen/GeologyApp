@@ -1,5 +1,8 @@
 package org.example.models
 
+import org.example.ui.common.PrettyPrint
+
+
 class Location (
     var locationId: String,
     var name:String? = null,
@@ -11,15 +14,9 @@ class Location (
     private var workers:MutableList<Worker> = mutableListOf()
 
 
-    override fun toString(): String =
-        "ID: ${locationId} | " +
-        "Name: ${name} | " +
-        "Description: ${description} | " +
-        "Latitude: ${latitude} | " +
-        "Longitude: ${longitude} | " +
-        "Minerals: ${minerals.joinToString { it.toString() }} | " +
-        "Workers: ${workers.joinToString { it.firstName + " " + it.lastName }}"
-
+    override fun toString(): String{
+        return PrettyPrint.location(this)
+    }
     fun getMinerals(): List<Mineral> =
         minerals.toList()
 

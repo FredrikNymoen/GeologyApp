@@ -1,5 +1,7 @@
 package org.example.models
 
+import org.example.ui.common.PrettyPrint
+
 class Mineral (
     var name:String? = null,
     var luster:List<String> = emptyList(),
@@ -9,9 +11,5 @@ class Mineral (
     var fracture:String? = null
 ){
     override fun toString(): String =
-        "Name: ${name ?: "(unknown)"} | " +
-        "Luster: ${luster.joinToString()} | " +
-        "Color: ${color.joinToString()} | " +
-        "Hardness: ${hardnessMin ?: "?"}–${hardnessMax ?: "?"} | " +
-        "Fracture: ${fracture ?: "(unknown)"}"
+        PrettyPrint.mineralRowLabeled(this)
 }

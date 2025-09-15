@@ -17,3 +17,4 @@ inline fun <reified T> fromInput(input: String): T?
         it.shortcut.equals(input, ignoreCase = true)
     }
 }
+
