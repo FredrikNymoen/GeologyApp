@@ -3,13 +3,12 @@ package org.example.services
 import org.example.models.Mineral
 import org.example.utils.MineralLoader
 
-class MineralService (
-    val source : () -> List<Mineral> = {MineralLoader.loadFromFile()}
-){
+class MineralService {
+
     private val minerals = mutableListOf<Mineral>() //The list with all the minerals
 
     init {
-        minerals += source()           // update minerals when creating the object
+        minerals += MineralLoader.loadFromFile()          // update minerals when creating the object
     }
 
     // --- CRUD on mineral list ---
@@ -25,7 +24,7 @@ class MineralService (
         minerals.getOrNull(index)?.let { mutate(it); true } ?: false // true if update was successful, false otherwise
 
     /** Delete by name */
-    fun deleteByName(name: String): Boolean =
+    fun delete(name: String): Boolean =
         minerals.removeIf { (it.name ?: "").equals(name, ignoreCase = true) }
 
     /** Sort alphabetically by name (unknown names go last). */

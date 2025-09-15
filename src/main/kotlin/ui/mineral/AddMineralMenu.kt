@@ -8,8 +8,12 @@ import org.example.ui.common.ConsoleIO
 /**
  * Handles adding a new Mineral with validation and confirmation.
  * Keeps asking until user confirms (save) or cancels.
+ * Optional: run a callback after saving (e.g., link mineral to a location).
  */
-class AddMineralMenu(private val service: MineralService) {
+class AddMineralMenu(
+    private val service: MineralService,
+    private val afterSave: ((Mineral) -> Unit)? = null
+) {
 
     // Helper to parse comma- or slash-separated lists
     private fun parseList(input: String): List<String> =
@@ -86,6 +90,10 @@ class AddMineralMenu(private val service: MineralService) {
         return when (ConfirmationAction.from(ConsoleIO.choice())) {
             ConfirmationAction.Save -> {
                 service.add(candidate)
+
+                // IMPORTANT: invoke the callback so AddMineralToLocationMenu can link it
+                afterSave?.invoke(candidate)
+
                 println("Added:\n$candidate")
                 true
             }

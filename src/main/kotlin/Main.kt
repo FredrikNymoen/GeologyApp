@@ -5,6 +5,7 @@ import org.example.services.MineralService
 import org.example.ui.location.LocationMenu
 import org.example.ui.MainMenu
 import org.example.actions.MainMenuAction
+import org.example.services.WorkerService
 import org.example.ui.mineral.MineralMenu
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
@@ -16,9 +17,10 @@ import org.example.ui.mineral.MineralMenu
 fun main() {
     val mineralService = MineralService()
     val locationService = LocationService()
+    val workerService = WorkerService()
 
     val mineralMenu = MineralMenu(mineralService)
-    val locationMenu = LocationMenu(locationService)
+    val locationMenu = LocationMenu(locationService, mineralService, workerService)
 
     /**
      * Main loop
@@ -29,7 +31,6 @@ fun main() {
             MainMenuAction.Locations -> locationMenu.run()
             MainMenuAction.Minerals -> mineralMenu.run()
             MainMenuAction.Workers -> println("Workers")
-            MainMenuAction.UpdateWorkers -> println("Update workers")
             MainMenuAction.Exit -> return
         }
     }

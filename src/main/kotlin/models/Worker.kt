@@ -1,15 +1,16 @@
 package org.example.models
 
 class Worker (
-    var firstname:String? = null,
-    var lastname:String? = null,
-    var age:Int? = null,
-    var experienceYears:Int? = null
+    val workerId: String,
+    var firstName: String,
+    var lastName: String,
+    var phone: String,
+    /** Timelønn som BigDecimal for presise penger-beregninger. */
+    var hourlyWage: Double,
+    /** Lokasjoner den ansatte er tilknyttet (navn/ID). */
+    var locations: MutableSet<Location> = mutableSetOf(),
+    /** Gjentakende ukentlige skift. */
+    var shifts: MutableList<WorkShift> = mutableListOf()
 ) {
-
-    override fun toString(): String =
-        "First Name: ${firstname ?: "(unknown)"} | " +
-        "Last Name: ${lastname ?: "(unknown)"} | " +
-        "Age: ${age ?: "(unknown)"} | " +
-        "Experience Years: ${experienceYears ?: "(unknown)"}"
+    fun fullName(): String = "$firstName $lastName"
 }

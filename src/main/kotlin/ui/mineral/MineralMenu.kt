@@ -1,6 +1,5 @@
 package org.example.ui.mineral
 
-import org.example.actions.MainMenuAction
 import org.example.actions.mineral.MineralMenuAction
 import org.example.services.MineralService
 import org.example.ui.common.ConsoleIO
@@ -13,14 +12,12 @@ class MineralMenu(
     private val addMineralMenu = AddMineralMenu(mineralService)
     private val updateMineralMenu = UpdateMineralMenu(mineralService)
     private val filterMineralMenu = FilterMineralMenu(mineralService)
-
-
+    private val options = MineralMenuAction.entries.map { "${it.shortcut} - ${it.label}" }
 
     fun run() {
-        val options = MineralMenuAction.entries.map { "${it.shortcut} - ${it.label}" }
         while (true) {
             // Show menu and read choice
-            ConsoleIO.showMenu("Main Menu", options)
+            ConsoleIO.showMenu("Mineral Menu", options)
             val choice = ConsoleIO.choice()
 
             val action = fromInput<MineralMenuAction>(choice)
@@ -77,7 +74,7 @@ class MineralMenu(
                 MineralMenuAction.Delete -> {
                     print("Name to delete: ")
                     val q = ConsoleIO.choice()
-                    val removed = mineralService.deleteByName(q)
+                    val removed = mineralService.delete(q)
                     println(if (removed) "Deleted '$q'." else "No mineral found with name '$q'.")
                 }
 

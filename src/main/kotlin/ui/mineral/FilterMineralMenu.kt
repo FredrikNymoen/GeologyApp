@@ -7,6 +7,8 @@ import org.example.utils.fromInput
 
 class FilterMineralMenu(private val service: MineralService) {
 
+    val options = FilterMenuAction.entries.map { "${it.shortcut} - ${it.label}" }
+
     fun run() {
         // State for filters (nullable means "ignore")
         var nameContains: String? = null
@@ -15,7 +17,6 @@ class FilterMineralMenu(private val service: MineralService) {
         var hardness: Double? = null
 
 
-        val options = FilterMenuAction.entries.map { "${it.shortcut} - ${it.label}" }
         loop@ while (true) {
             // Show current filter state
             println("\n=== Filter Minerals ===")

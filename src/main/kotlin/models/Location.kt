@@ -1,30 +1,44 @@
 package org.example.models
 
 class Location (
+    var locationId: String,
     var name:String? = null,
     var description:String? = null,
     var latitude:Double, //number between -90 and 90
     var longitude:Double, //number between -180 and 180
-    private var minerals:MutableList<Mineral>? = mutableListOf(),
-    private var workers:MutableList<Worker>? = mutableListOf()
 ) {
+    private var minerals:MutableList<Mineral> = mutableListOf()
+    private var workers:MutableList<Worker> = mutableListOf()
+
+
     override fun toString(): String =
+        "ID: ${locationId} | " +
         "Name: ${name} | " +
         "Description: ${description} | " +
         "Latitude: ${latitude} | " +
         "Longitude: ${longitude} | " +
-        "Minerals: ${minerals?.joinToString { it.name ?: "(unknown)" }} | " +
-        "Workers: ${workers?.joinToString { it.firstname + " " + it.lastname }}"
+        "Minerals: ${minerals.joinToString { it.toString() }} | " +
+        "Workers: ${workers.joinToString { it.firstName + " " + it.lastName }}"
 
-    fun getMinerals(): String =
-        minerals
-            ?.takeIf { it.isNotEmpty() }
-            ?.joinToString(separator = "\n") { it.toString() }
-            ?: "(none)"
+    fun getMinerals(): List<Mineral> =
+        minerals.toList()
 
     fun addMineral(mineral: Mineral) {
-        minerals?.add(mineral)
+        minerals.add(mineral)
     }
 
+    fun removeMineral(mineral: Mineral) {
+        minerals.remove(mineral)
+    }
 
+    fun getWorkers(): List<Worker> =
+        workers.toList()
+
+    fun addWorker(worker: Worker) {
+        workers.add(worker)
+    }
+
+    fun removeWorker(worker: Worker) {
+        workers.remove(worker)
+    }
 }

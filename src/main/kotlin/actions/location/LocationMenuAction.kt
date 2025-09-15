@@ -7,8 +7,11 @@ enum class LocationMenuAction (
     override val shortcut: String
 ) : MenuAction {
     ListAll("List all locations", "1"),
-    Add("Add location", "2"),
-    Update("Update location", "3"),
-    Delete("Delete location", "4"),
+    ListMinerals("List minerals at location", "2"),
+    Add("Add location", "3"),
+    Update("Update location", "4"),
+    Delete("Delete location", "5"),
+    AddMineral("Add mineral to location", "6"),
+    AddWorker("Add worker to location", "7"),
     Back("Go back", "B");
 }
