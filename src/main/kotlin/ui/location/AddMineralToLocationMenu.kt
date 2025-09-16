@@ -12,11 +12,11 @@ class AddMineralToLocationMenu(
     fun run() {
         println("\n=== Add Mineral to Location ===")
 
-        val locationName = ConsoleIO.nonEmpty("Location name")
+        val locationId = ConsoleIO.nonEmpty("Location id")
 
-        val loc = locationService.get(locationName)
+        val loc = locationService.get(locationId)
         if (loc == null) {
-            println("Location '$locationName' not found.")
+            println("Location with location id:'$locationId' not found.")
             return
         }
 
@@ -26,10 +26,10 @@ class AddMineralToLocationMenu(
             afterSave = { saved ->             // Callback that runs AFTER a mineral is saved/selected
                 try {
                     // Link the chosen/saved mineral to the given location in LocationService
-                    locationService.addMineralToLocation(locationName, saved)
+                    locationService.addMineralToLocation(locationId, saved)
 
                     // Print confirmation. If name is null, show "(unknown)" instead.
-                    println("Linked '${saved.name ?: "(unknown)"}' to '$locationName'.")
+                    println("Linked '${saved.name ?: "(unknown)"}' to '${locationService.get(locationId)?.name}'.")
                 } catch (ex: IllegalArgumentException) {
                     // Link can fail (e.g., location not found or duplicate mineral at that location)
                     // LocationService throws IllegalArgumentException; we surface the message.

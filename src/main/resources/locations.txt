@@ -1,0 +1,4 @@
+# locationId   name             description               latitude   longitude
+L1             Trondheim Sentrum  Downtown outcrop area     63.4305    10.3951
+L2             Dragvoll         Schist exposure            63.4090    10.4710
+L3             Bymarka          Granite and pegmatites     63.4460    10.2560

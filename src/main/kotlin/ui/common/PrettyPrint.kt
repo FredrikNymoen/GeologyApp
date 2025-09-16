@@ -4,11 +4,15 @@ import org.example.models.Location
 import org.example.models.Mineral
 import org.example.models.Worker
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import kotlin.math.abs
 
 object PrettyPrint {
 
     private val timeFmt: DateTimeFormatter = DateTimeFormatter.ofPattern("H:mm")
+    private fun Double.f2(): String = String.format("%.2f", this)
+    private fun String.cap3(): String = take(3).lowercase().replaceFirstChar { it.uppercase() }
+
 
     // --- configurable column widths for mineral ---
     data class LabeledCols(
@@ -67,6 +71,38 @@ object PrettyPrint {
     }
 
 
+    /** Compact 2–3 line worker preview used inside a Location printout. */
+    fun workerCompactForLocation(worker: Worker, loc: Location, maxShifts: Int = 2): String = buildString {
+        // Line 1: id | name | phone
+        appendLine("${worker.workerId} | ${worker.getFullName()} | ${worker.phone}")
+
+        // Filter only shifts at this location
+        val here = worker.getShifts()
+            .filter { it.location.locationId == loc.locationId }
+            .sortedBy { it.day.value }
+
+        // Line 2: shifts at this location (truncated)
+        if (here.isEmpty()) {
+            appendLine("  Shifts: (none)")
+            append("  Weekly hours: 0.00")
+            return@buildString
+        }
+
+        val shown = here.take(maxShifts).joinToString("; ") { s ->
+            "${s.day.name.cap3()} ${s.start}–${s.end} @ ${"%.0f".format(s.hourlyWage)}/h"
+        }
+        val more = here.size - maxShifts
+        appendLine(
+            if (more > 0) "  Shifts: $shown (+$more more)"
+            else          "  Shifts: $shown"
+        )
+
+        // Line 3: weekly hours at this location only
+        val minutes = here.sumOf { ChronoUnit.MINUTES.between(it.start, it.end) }
+        val hours = minutes / 60.0
+        append("  Weekly hours here: ${hours.f2()}")
+    }
+
 
     fun location(loc: Location): String = buildString {
         appendLine("Location")
@@ -77,8 +113,18 @@ object PrettyPrint {
         appendLine("  Longitude : ${loc.longitude}")
         appendLine("  Minerals  (${loc.getMinerals().size}):")
         appendLine(formatList(loc.getMinerals()) { it.name ?: it.toString() })
-        appendLine("  Workers   (${loc.getWorkers().size}):")
-        appendLine(formatList(loc.getWorkers()) { "${it.firstName} ${it.lastName}".trim() })
+
+        val workers = loc.getWorkers()
+        appendLine("  Workers   (${workers.size}):")
+        if (workers.isEmpty()) {
+            appendLine("    (none)")
+        } else {
+            val shown = workers.joinToString("\n") { w ->
+                // hver worker blir maks 3 linjer
+                "    " + workerCompactForLocation(w, loc).replace("\n", "\n    ")
+            }
+            appendLine(shown)
+        }
     }
 
     fun worker(w: Worker): String = buildString {

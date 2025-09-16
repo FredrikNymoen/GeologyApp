@@ -7,11 +7,11 @@ import org.example.ui.common.ConsoleIO
 /**
  * Separate update flow for a single Mineral.
  */
-class UpdateMineralMenu(private val service: MineralService) {
+class UpdateMineralMenu(private val mineralService: MineralService) {
 
     fun run() {
         outer@ while (true) {
-            val list = service.listAll()
+            val list = mineralService.getAll()
             if (list.isEmpty()) { println("No minerals to update."); return }
 
             val items = list.mapIndexed { i, m -> "${i + 1} - ${m.name ?: "(unknown)"}" } + "B - Go back"
@@ -51,6 +51,16 @@ class UpdateMineralMenu(private val service: MineralService) {
                     nameIn.isBlank()  -> current.name
                     else              -> nameIn
                 }
+
+                if (proposedName != null) {
+                    val cur = (current.name ?: "").trim()
+                    if (!cur.equals(proposedName, ignoreCase = true) &&
+                        mineralService.exists(proposedName)) {
+                        println("A mineral named '$proposedName' already exists. Choose another name.")
+                        continue@edit
+                    }
+                }
+
                 val proposedFracture = when {
                     fractureIn == "-" -> null
                     fractureIn.isBlank()-> current.fracture
@@ -95,7 +105,7 @@ class UpdateMineralMenu(private val service: MineralService) {
                 print("\nSave changes? [y]es / [e]dit again / [c]ancel: ")
                 when (ConsoleIO.choice()) {
                     "y", "yes" -> {
-                        val ok = service.update(idx) { m ->
+                        val ok = mineralService.update(idx) { m ->
                             m.name = proposedName
                             m.luster = proposedLuster
                             m.color = proposedColor
@@ -103,7 +113,7 @@ class UpdateMineralMenu(private val service: MineralService) {
                             m.hardnessMax = pMax
                             m.fracture = proposedFracture
                         }
-                        if (ok) println("\nUpdated successfully:\n${service.listAll()[idx]}") else println("Update failed.")
+                        if (ok) println("\nUpdated successfully:\n${mineralService.getAll()[idx]}") else println("Update failed.")
                         return
                     }
                     "e", "edit"   -> continue@edit

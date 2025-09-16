@@ -2,19 +2,25 @@ package org.example.services
 
 import org.example.models.WorkShift
 import org.example.models.Worker
+import org.example.utils.WorkerLoader
 import java.time.DayOfWeek
-import java.time.YearMonth
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.round
 
-class WorkerService {
-    // key = employeeId
+class WorkerService (
+    private val locationService: LocationService
+) {
+
     private val workers = mutableListOf<Worker>();
     private val seq = AtomicInteger(0)
 
+    init {
+        workers += WorkerLoader.loadFromFile(locationService)
+    }
+
     /** ~ average weeks per month: 52 weeks / 12 months */
-    private val WEEKS_PER_MONTH = 52.0 / 12.0
+    private val weeksPerMonth = 52.0 / 12.0
 
 
     private fun nextId(): String = seq.incrementAndGet().toString()
@@ -45,7 +51,9 @@ class WorkerService {
 
     /** Get a worker by ID, or null if not found. */
     fun get(employeeId: String): Worker? =
-        workers.firstOrNull { it.workerId == employeeId }
+        workers.find { it.workerId.equals(employeeId, ignoreCase = true) }
+
+
 
     /** Replace the entire worker object with the same ID. */
     fun replace(employeeId: String, newWorker: Worker) {
@@ -62,16 +70,17 @@ class WorkerService {
     }
 
     /** Delete by ID. Returns true if at least one entry was removed. */
-    fun delete(employeeId: String): Boolean =
-        workers.removeAll { it.workerId == employeeId }
+    fun delete(workerId: String): Boolean =
+        workers.removeAll { it.workerId.equals(workerId, ignoreCase = true) }
 
     /** Defensive copy so callers cannot mutate internal storage directly. */
     fun getAll(): List<Worker> = workers.toList()
 
     /** All workers who have at least one shift at the given location. */
     fun workersAt(locationId: String): List<Worker> =
-        workers.filter { w -> w.getShifts().any { it.location.locationId == locationId } }
-
+        workers.filter { w ->
+            w.getShifts().any { it.location.locationId.equals(locationId, ignoreCase = true) }
+        }
 
     /**  -------  Methods for calculating paychecks --------*/
 
@@ -125,7 +134,7 @@ class WorkerService {
 
     /** Typical monthly pay = weeklyPay × (52/12). */
     fun monthlyPayTypical(worker: Worker): Double =
-        round2(weeklyPay(worker) * WEEKS_PER_MONTH)
+        round2(weeklyPay(worker) * weeksPerMonth)
 
     /** Typical monthly paycheck for one worker ID (null if not found). */
     fun calculatePaycheckForWorkerTypical(workerId: String): Double? =

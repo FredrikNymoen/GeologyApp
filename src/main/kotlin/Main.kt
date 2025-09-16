@@ -18,7 +18,7 @@ import org.example.ui.worker.WorkerMenu
 fun main() {
     val mineralService = MineralService()
     val locationService = LocationService()
-    val workerService = WorkerService()
+    val workerService = WorkerService(locationService)
 
     val mineralMenu = MineralMenu(mineralService)
     val locationMenu = LocationMenu(locationService, mineralService, workerService)

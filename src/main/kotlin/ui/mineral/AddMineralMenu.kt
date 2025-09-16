@@ -2,7 +2,6 @@ package org.example.ui.mineral
 
 import org.example.actions.ConfirmationAction
 import org.example.actions.mineral.AddMineralMenuAction
-import org.example.actions.mineral.MineralMenuAction
 import org.example.models.Mineral
 import org.example.services.MineralService
 import org.example.ui.common.ConsoleIO
@@ -65,14 +64,26 @@ class AddMineralMenu(
 // Returns null if input was invalid (so loop can continue).
     private fun buildMineral(): Mineral? {
         println("\n=== Add Mineral ===")
-        println("Leave a field blank if unknown.")
+        println("Leave a field blank if unknown (except Name).")
 
         fun ask(label: String): String {
             print("$label: ")
             return ConsoleIO.choice()
         }
 
-        val nameIn     = ask("Name").ifBlank { null }
+        val nameIn: String = run {
+            while (true) {
+                val n = ConsoleIO.nonEmpty("Name").trim()
+                if (service.exists(n)) {
+                    println("A mineral named '$n' already exists. Choose another name.")
+                    continue
+                }
+                return@run n
+            }
+            // unreachable
+            ""
+        }
+
         val lusterIn   = ask("Luster (comma or '/' separated)")
         val colorIn    = ask("Color  (comma or '/' separated)")
         val minIn      = ask("Hardness MIN (1..10)")
@@ -144,7 +155,7 @@ class AddMineralMenu(
 
     /** Let the user select an existing mineral by index or by exact name (case-insensitive). */
     private fun selectExisting(): Mineral? {
-        val all = service.listAll()
+        val all = service.getAll()
         if (all.isEmpty()) {
             println("No minerals in the catalog yet.")
             return null

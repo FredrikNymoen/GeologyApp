@@ -83,7 +83,7 @@ class WorkerMenu (
                         if (paycheck == null) {
                             println("Worker not found.")
                         } else {
-                            println("Monthly paycheck (avg, weekly × 52/12) for '$workerId': ${"%.2f".format(paycheck)}")
+                            println("Monthly paycheck (avg, weekly × 52/12) for '${workerService.get(workerId)?.getFullName()}': ${"%.2f".format(paycheck)}")
                         }
                     }
 

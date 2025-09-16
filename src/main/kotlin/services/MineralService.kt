@@ -12,11 +12,15 @@ class MineralService {
     }
 
     // --- CRUD on mineral list ---
-    fun listAll() : List<Mineral> {
+    fun getAll() : List<Mineral> {
         return minerals.toList() // Returns the minerals as a list
     }
 
-    fun add(mineral: Mineral) {
+    fun exists(name: String) : Boolean {
+        return minerals.any { (it.name ?: "").equals(name, ignoreCase = true) }
+    }
+
+    fun add(mineral: Mineral){
         minerals.add(mineral)
     }
 
@@ -35,7 +39,7 @@ class MineralService {
      *  Returns all minerals whose name starts with the given query.
      *  Example: "Am" -> Amethyst, Amazonite, ...
      */
-    fun searchByName(name: String): List<Mineral> {
+    fun getByName(name: String): List<Mineral> {
         if (name.isBlank()) {
             return emptyList()
         }

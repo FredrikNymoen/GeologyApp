@@ -53,12 +53,14 @@ class LocationMenu (
 
                 // 3) List minerals at location
                 LocationMenuAction.ListMinerals -> {
-                    print("Enter location name: ")
-                    val locName = ConsoleIO.choice()
-                    val minerals = locationService.listMineralsAtLocation(locName)
-                    if (minerals == null) println("No minerals found at this location or location does not exist.")
-                    else minerals.forEachIndexed { i, m -> println("${i + 1}. $m") } // uses Mineral.toString()
-                }
+                    print("Enter location id: ")
+                    val locId = ConsoleIO.choice()
+                    val minerals = locationService.listMineralsAtLocation(locId)
+                    if (minerals?.isEmpty() ?: true) {
+                        println("No minerals found at this location or location does not exist.")
+                    } else {
+                        minerals.forEachIndexed { i, m -> println("${i + 1}. $m") }
+                    }}
 
                 // 4) Add location
                 LocationMenuAction.Add -> {
@@ -72,11 +74,11 @@ class LocationMenu (
 
                 // 6) Delete location
                 LocationMenuAction.Delete -> {
-                    print("Enter location name to delete: ")
-                    val locName = ConsoleIO.choice()
-                    val success = locationService.delete(locName)
-                    if (success) println("Location '${locName}' deleted.")
-                    else println("Location '${locName}' not found.")
+                    print("Enter location id to delete: ")
+                    val locId = ConsoleIO.choice()
+                    val success = locationService.delete(locId)
+                    if (success) println("Location with id: '${locId}' deleted.")
+                    else println("Location with id: '${locId}' not found.")
                 }
 
                 // 7) Add mineral to location

@@ -29,7 +29,7 @@ class MineralMenu(
             when (action) {
                 // 1) List all
                 MineralMenuAction.ListAll -> {
-                    val all = mineralService.listAll()
+                    val all = mineralService.getAll()
                     if (all.isEmpty()) println("No minerals found.")
                     else all.forEachIndexed { i, m -> println("${i + 1}. $m") } // uses Mineral.toString()
                 }
@@ -45,7 +45,7 @@ class MineralMenu(
                 MineralMenuAction.SearchByName -> {
                     print("Name to search: ")
                     val q = ConsoleIO.choice()
-                    val hits = mineralService.searchByName(q)
+                    val hits = mineralService.getByName(q)
                     if (hits.isEmpty()) {
                         println("No matches.")
                     } else {
