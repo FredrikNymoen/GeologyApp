@@ -1,24 +1,16 @@
 package org.example.ui.location
 
+import org.example.models.Location
 import org.example.services.LocationService
 import org.example.services.MineralService
-import org.example.ui.common.ConsoleIO
 import org.example.ui.mineral.AddMineralMenu
 
 class AddMineralToLocationMenu(
     private val locationService: LocationService,
     private val mineralService: MineralService
 ) {
-    fun run() {
+    fun run(loc: Location) {
         println("\n=== Add Mineral to Location ===")
-
-        val locationId = ConsoleIO.nonEmpty("Location id")
-
-        val loc = locationService.get(locationId)
-        if (loc == null) {
-            println("Location with location id:'$locationId' not found.")
-            return
-        }
 
         // Build an interactive flow for adding/selecting a mineral, then link it to a location.
         val addMineralFlow = AddMineralMenu(
@@ -26,10 +18,10 @@ class AddMineralToLocationMenu(
             afterSave = { saved ->             // Callback that runs AFTER a mineral is saved/selected
                 try {
                     // Link the chosen/saved mineral to the given location in LocationService
-                    locationService.addMineralToLocation(locationId, saved)
+                    locationService.addMineralToLocation(loc.locationId, saved)
 
                     // Print confirmation. If name is null, show "(unknown)" instead.
-                    println("Linked '${saved.name ?: "(unknown)"}' to '${locationService.get(locationId)?.name}'.")
+                    println("Linked '${saved.name ?: "(unknown)"}' to '${loc.name}'.")
                 } catch (ex: IllegalArgumentException) {
                     // Link can fail (e.g., location not found or duplicate mineral at that location)
                     // LocationService throws IllegalArgumentException; we surface the message.

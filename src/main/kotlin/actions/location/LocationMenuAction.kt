@@ -12,6 +12,5 @@ enum class LocationMenuAction (
     Add("Add location", "4"),
     Update("Update location", "5"),
     Delete("Delete location", "6"),
-    AddMineral("Add mineral to location", "7"),
     Back("Go back", "B");
 }

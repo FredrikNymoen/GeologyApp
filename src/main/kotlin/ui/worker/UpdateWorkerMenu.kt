@@ -123,7 +123,7 @@ class UpdateWorkerMenu(
 
     /** Returns null to cancel. */
     private fun promptOptional(label: String): String? {
-        val v = ConsoleIO.prompt("$label: ")
+        val v = ConsoleIO.prompt(label)
         return v.ifBlank { null }
     }
 
@@ -159,7 +159,7 @@ class UpdateWorkerMenu(
     /** Non-negative double; accepts comma or dot. */
     private fun promptNonNegativeDouble(label: String): Double {
         while (true) {
-            val raw = ConsoleIO.prompt("$label: ")
+            val raw = ConsoleIO.prompt(label)
             val v = raw.replace(',', '.').toDoubleOrNull()
             if (v != null && v >= 0.0) return v
             println("Please enter a non-negative number (e.g., 0, 200, 199.5).")

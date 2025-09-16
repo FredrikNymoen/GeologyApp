@@ -14,8 +14,7 @@ class LocationMenu (
 ) {
 
     private val addLocationMenu = AddLocationMenu(locationService)
-    private val updateLocationMenu = UpdateLocationMenu(locationService)
-    private val addMineralToLocationMenu = AddMineralToLocationMenu(locationService, mineralService)
+    private val updateLocationMenu = UpdateLocationMenu(locationService, mineralService)
     private val options = LocationMenuAction.entries.map { "${it.shortcut} - ${it.label}" }
 
 
@@ -79,11 +78,6 @@ class LocationMenu (
                     val success = locationService.delete(locId)
                     if (success) println("Location with id: '${locId}' deleted.")
                     else println("Location with id: '${locId}' not found.")
-                }
-
-                // 7) Add mineral to location
-                LocationMenuAction.AddMineral -> {
-                    addMineralToLocationMenu.run()
                 }
 
                 // B) Go back
