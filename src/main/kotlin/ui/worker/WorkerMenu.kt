@@ -6,15 +6,20 @@ import org.example.services.WorkerService
 import org.example.ui.common.ConsoleIO
 import org.example.utils.fromInput
 
+/**
+ * Console-driven worker menu: lists/sorts workers, adds/updates/deletes, and
+ * calculates typical monthly pay (weekly total × 52/12). Re-prompts on bad input.
+ */
 class WorkerMenu (
     private val workerService: WorkerService,
-    private val locationService: LocationService
+    locationService: LocationService
 ){
 
     private val addWorkerMenu = AddWorkerMenu(workerService)
     private val updateWorkerMenu = UpdateWorkerMenu(workerService, locationService)
     private val options = WorkerMenuAction.entries.map { "${it.shortcut} - ${it.label}" }
 
+    /** Main loop; returns when user chooses Back. */
     fun run() {
             while (true) {
                 // Show menu and read choice

@@ -18,8 +18,9 @@ class AddMineralMenu(
     private val allowSelectExisting: Boolean = false
 ) {
 
-
     private val options = AddMineralMenuAction.entries.map { "${it.shortcut} - ${it.label}" }
+
+    /** Main loop: add new mineral or select existing (if allowed). */
     fun run() {
         // If enabled, offer to select an existing mineral first.
         if (allowSelectExisting) {
@@ -47,7 +48,10 @@ class AddMineralMenu(
         }
     }
 
-    /** Ask the user which mode they want. */
+    /**
+     * Prompt the user to choose between creating a new mineral, selecting an existing one, or canceling.
+     * Returns the chosen action.
+     */
     private fun promptMode(): AddMineralMenuAction {
         while (true) {
             ConsoleIO.showMenu("Add/Select Mineral", options)
@@ -59,9 +63,11 @@ class AddMineralMenu(
     }
 
 
-
-    // Collect and validate user input, then build a Mineral candidate.
-// Returns null if input was invalid (so loop can continue).
+    /**
+     * Prompt the user for all Mineral fields, validate, and return a Mineral object.
+     * Returns null if validation fails (e.g., invalid hardness), in which case the
+     * caller should re-invoke to try again.
+     */
     private fun buildMineral(): Mineral? {
         println("\n=== Add Mineral ===")
         println("Leave a field blank if unknown (except Name).")
@@ -105,7 +111,12 @@ class AddMineralMenu(
         )
     }
 
-    // Validate and normalize Mohs hardness values
+    /**
+     * Validate hardness inputs (blank, single, or range 1..10).
+     * Returns Pair(min, max) where either may be null if blank.
+     * Returns null if invalid input (out of range or non-numeric).
+     * Swaps min/max if min > max.
+     */
     private fun validateHardness(minIn: String, maxIn: String): Pair<Double?, Double?>? {
         val minVal = minIn.toDoubleOrNull()
         val maxVal = maxIn.toDoubleOrNull()
@@ -125,7 +136,11 @@ class AddMineralMenu(
         return hMin to hMax
     }
 
-    // Ask for confirmation (y/e/c) and handle saving
+    /**
+     * Show a preview of the candidate and ask the user to confirm saving it,
+     * edit again, or cancel the whole operation.
+     * Returns true if the operation is done (saved or canceled), false to edit again.
+     */
     private fun confirmAndSave(candidate: Mineral): Boolean {
         println("\n--- Preview ---")
         println(candidate)

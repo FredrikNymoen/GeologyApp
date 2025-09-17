@@ -1,5 +1,8 @@
 package org.example.actions
 
+/**
+ * Actions available from the main menu.
+ */
 enum class MainMenuAction(
     override val label: String,
     override val shortcut: String

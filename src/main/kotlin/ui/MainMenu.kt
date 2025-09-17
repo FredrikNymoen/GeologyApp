@@ -4,8 +4,11 @@ import org.example.actions.MainMenuAction
 import org.example.ui.common.ConsoleIO
 import org.example.utils.fromInput
 
-object MainMenu{
-
+/**
+ * The main menu of the application.
+ * Presents options to the user and returns their selection.
+ */
+class MainMenu {
     fun run(): MainMenuAction {
         val options = MainMenuAction.entries.map { "${it.shortcut} - ${it.label}" }
         while (true) {
@@ -18,5 +21,4 @@ object MainMenu{
             println("Invalid choice, try again.")
         }
     }
-
 }

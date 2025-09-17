@@ -2,6 +2,10 @@ package org.example.actions.worker
 
 import org.example.actions.MenuAction
 
+/**
+ * Actions available in the Worker Menu.
+ * Each action has a user-friendly label and a shortcut key for selection.
+ */
 enum class WorkerMenuAction (
     override val label: String,
     override val shortcut: String

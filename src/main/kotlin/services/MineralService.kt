@@ -3,6 +3,11 @@ package org.example.services
 import org.example.models.Mineral
 import org.example.utils.MineralLoader
 
+/**
+ * Service class to manage the list of minerals.
+ * Loads the minerals from file on initialization.
+ * Provides CRUD operations and filtering/sorting capabilities.
+ */
 class MineralService {
 
     private val minerals = mutableListOf<Mineral>() //The list with all the minerals
@@ -11,19 +16,24 @@ class MineralService {
         minerals += MineralLoader.loadFromFile()          // update minerals when creating the object
     }
 
-    // --- CRUD on mineral list ---
+    /** Returns all minerals as a list. */
     fun getAll() : List<Mineral> {
         return minerals.toList() // Returns the minerals as a list
     }
 
+    /** Check if a mineral with the given name exists (case-insensitive). */
     fun exists(name: String) : Boolean {
         return minerals.any { (it.name ?: "").equals(name, ignoreCase = true) }
     }
 
+    /** Add a new mineral to the list. */
     fun add(mineral: Mineral){
         minerals.add(mineral)
     }
 
+    /** Update an existing mineral by index, applying the given mutation function.
+     *  Returns true if update was successful, false if index was invalid.
+     */
     fun update(index: Int, mutate: (Mineral) -> Unit): Boolean =
         minerals.getOrNull(index)?.let { mutate(it); true } ?: false // true if update was successful, false otherwise
 

@@ -5,10 +5,17 @@ import org.example.services.LocationService
 import org.example.services.MineralService
 import org.example.ui.mineral.AddMineralMenu
 
+/**
+ * UI flow for adding a mineral to a specific location.
+ * Uses AddMineralMenu to create/select a mineral, then links it to the location.
+ * Depends on LocationService and MineralService.
+ */
 class AddMineralToLocationMenu(
     private val locationService: LocationService,
     private val mineralService: MineralService
 ) {
+
+    /** Starts the flow to add/select a mineral and link it to the given location. */
     fun run(loc: Location) {
         println("\n=== Add Mineral to Location ===")
 
@@ -23,7 +30,6 @@ class AddMineralToLocationMenu(
                     // Print confirmation. If name is null, show "(unknown)" instead.
                     println("Linked '${saved.name ?: "(unknown)"}' to '${loc.name}'.")
                 } catch (ex: IllegalArgumentException) {
-                    // Link can fail (e.g., location not found or duplicate mineral at that location)
                     // LocationService throws IllegalArgumentException; we surface the message.
                     println(ex.message)
                 }

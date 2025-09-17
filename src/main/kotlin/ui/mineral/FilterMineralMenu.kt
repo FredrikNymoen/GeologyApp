@@ -5,10 +5,17 @@ import org.example.services.MineralService
 import org.example.ui.common.ConsoleIO
 import org.example.utils.fromInput
 
+/**
+ * Menu to filter minerals based on various criteria.
+ * User can set filters for name, color, fracture, and hardness.
+ * User can run the filter to see matching minerals.
+ * User can clear filters or go back to the previous menu.
+ */
 class FilterMineralMenu(private val service: MineralService) {
 
-    val options = FilterMenuAction.entries.map { "${it.shortcut} - ${it.label}" }
+    private val options = FilterMenuAction.entries.map { "${it.shortcut} - ${it.label}" }
 
+    /** Main loop; returns when user chooses Back. */
     fun run() {
         // State for filters (nullable means "ignore")
         var nameContains: String? = null

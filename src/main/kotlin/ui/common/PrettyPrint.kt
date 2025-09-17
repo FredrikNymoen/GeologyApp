@@ -7,11 +7,12 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import kotlin.math.abs
 
+/** Utility to pretty-print our data models in a human-readable way. */
 object PrettyPrint {
 
-    private val timeFmt: DateTimeFormatter = DateTimeFormatter.ofPattern("H:mm")
-    private fun Double.f2(): String = String.format("%.2f", this)
-    private fun String.cap3(): String = take(3).lowercase().replaceFirstChar { it.uppercase() }
+    private val timeFmt: DateTimeFormatter = DateTimeFormatter.ofPattern("H:mm") // 24h, no leading zero
+    private fun Double.f2(): String = String.format("%.2f", this) // 2 decimals
+    private fun String.cap3(): String = take(3).lowercase().replaceFirstChar { it.uppercase() } // Cap first letter, max 3 chars
 
 
     // --- configurable column widths for mineral ---
@@ -23,12 +24,15 @@ object PrettyPrint {
         val fracture: Int = 27
     )
 
+    /** Pad or truncate to exactly width w. */
     private fun padRight(s: String, w: Int): String =
         if (s.length >= w) s else s + " ".repeat(w - s.length)
 
+    /** Truncate string s to fit in width w, adding "…" if truncated. */
     private fun ellipsize(s: String, w: Int): String =
         if (w <= 1) "…" else if (s.length <= w) s else s.take(w - 1) + "…"
 
+    /** Format hardness range nicely. */
     private fun fmtHardness(min: Double?, max: Double?): String {
         fun f(x: Double) = if (abs(x - x.toInt()) < 1e-9) "${x.toInt()}" else "%.1f".format(x)
         return when {
@@ -40,7 +44,7 @@ object PrettyPrint {
         }
     }
 
-    /** Lager én kolonne med "Label: value", og passer på bredde + trunkering. */
+    /** Format one labeled column with fixed total width, truncating value if needed. */
     private fun labeledCol(label: String, value: String, totalWidth: Int): String {
         val prefix = "$label "
         val avail = (totalWidth - prefix.length).coerceAtLeast(1)
@@ -48,7 +52,10 @@ object PrettyPrint {
         return padRight(body, totalWidth)
     }
 
-    /** Én rad per mineral, med label i hver kolonne og faste bredder. */
+    /** One-line mineral with labeled fields, suitable for detailed view.
+     * Uses fixed-width columns, truncating values if needed.
+     * Default widths fit in 120 chars; customize via [cols].
+     */
     fun mineralRowLabeled(
         m: Mineral,
         cols: LabeledCols = LabeledCols(),
@@ -103,7 +110,7 @@ object PrettyPrint {
         append("  Weekly hours here: ${hours.f2()}")
     }
 
-
+    /** Detailed multi-line location view, including minerals and workers. */
     fun location(loc: Location): String = buildString {
         appendLine("Location")
         appendLine("  ID        : ${loc.locationId}")
@@ -127,6 +134,7 @@ object PrettyPrint {
         }
     }
 
+    /** Detailed multi-line worker view, including shifts. */
     fun worker(w: Worker): String = buildString {
         val shifts = w.getShifts().sortedBy { it.day.value }
         val weeklyHours = shifts.sumOf { it.hours() }

@@ -2,6 +2,10 @@ package org.example.actions.mineral
 
 import org.example.actions.MenuAction
 
+/**
+ * Represents possible actions in the Mineral Menu.
+ * Each action has a label and a shortcut key for user selection.
+ */
 enum class MineralMenuAction(
     override val label: String,
     override val shortcut: String

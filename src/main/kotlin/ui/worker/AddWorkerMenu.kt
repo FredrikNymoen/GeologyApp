@@ -3,6 +3,12 @@ package org.example.ui.worker
 import org.example.services.WorkerService
 import org.example.ui.common.ConsoleIO
 
+/**
+ * Menu to add a new worker.
+ * Prompts for first name, last name, and phone.
+ * Validates that none are empty.
+ * Calls WorkerService to create the worker.
+ */
 class AddWorkerMenu (
     private val workerService: WorkerService
 ){

@@ -7,14 +7,22 @@ import java.time.DayOfWeek
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
+/**
+ * Loads workers and shifts from `/workers.txt`: accepts `WORKER <id> <first> <last> <phone>` and
+ * `SHIFT <workerId> <DAY> <START> <END> <LocationId|Name> <HourlyWage>`,
+ * ignores blank/# lines, parses day by number or name,
+ * times as `H:mm`, wage with `.` or `,`, keeps at most one shift per weekday (replacing if present),
+ * and links each worker to the shift's location.
+ */
 object WorkerLoader {
 
-    private val splitter = Regex("\\t+|\\s{2,}") // tab eller 2+ space
+    /** Split on tab(s) or runs of 2+ spaces. */
+    private val splitter = Regex("\\t+|\\s{2,}")
     private val timeFmt  = DateTimeFormatter.ofPattern("H:mm")
 
-    fun loadFromFile(locationService: LocationService): List<Worker> {
-        val input = javaClass.getResourceAsStream("/workers.txt") ?: return emptyList()
-        val byId = linkedMapOf<String, Worker>() // bevar rekkefølge
+    fun loadFromFile(locationService: LocationService, resourcePath: String = "/workers.txt"): List<Worker> {
+        val input = javaClass.getResourceAsStream(resourcePath) ?: return emptyList()
+        val byId = linkedMapOf<String, Worker>() // preserve file order
 
         input.bufferedReader().useLines { lines ->
             lines.map { it.trim() }
@@ -25,49 +33,36 @@ object WorkerLoader {
 
                     when (p[0].uppercase()) {
                         "WORKER" -> {
-                            // WORKER <id> <first> <last> <phone>
-                            if (p.size >= 5) {
-                                val id = p[1]
-                                val first = p[2]
-                                val last = p[3]
-                                val phone = p[4]
-                                if (id.isNotBlank()) {
-                                    byId[id] = Worker(
-                                        workerId = id,
-                                        firstName = first,
-                                        lastName = last,
-                                        phone = phone,
-                                        shifts = mutableListOf()
-                                    )
-                                }
+                            if (p.size < 5) return@forEach
+                            val id = p[1]
+                            if (id.isBlank()) return@forEach
+                            if (!byId.containsKey(id)) {
+                                byId[id] = Worker(
+                                    workerId = id,
+                                    firstName = p[2],
+                                    lastName = p[3],
+                                    phone = p[4],
+                                    shifts = mutableListOf()
+                                )
                             }
                         }
                         "SHIFT" -> {
-                            // SHIFT <workerId> <DAY> <START> <END> <LocationId> <HourlyWage>
-                            if (p.size >= 7) {
-                                val workerId = p[1]
-                                val worker = byId[workerId] ?: return@forEach
+                            if (p.size < 7) return@forEach
+                            val worker = byId[p[1]] ?: return@forEach
+                            val day = parseDay(p[2]) ?: return@forEach
+                            val start = runCatching { LocalTime.parse(p[3], timeFmt) }.getOrNull() ?: return@forEach
+                            val end   = runCatching { LocalTime.parse(p[4], timeFmt) }.getOrNull() ?: return@forEach
+                            val wage  = p[6].replace(',', '.').toDoubleOrNull() ?: return@forEach
+                            val loc   = resolveLocation(p[5], locationService) ?: return@forEach
 
-                                val day = parseDay(p[2]) ?: return@forEach
-                                val start = LocalTime.parse(p[3], timeFmt)
-                                val end   = LocalTime.parse(p[4], timeFmt)
-                                val locId = p[5]
-                                val wage  = p[6].replace(',', '.').toDoubleOrNull() ?: return@forEach
+                            val shift = WorkShift(day, start, end, loc, wage)
 
-                                val loc = locationService.get(locId)
-                                    ?: locationService.listAll().firstOrNull { it.locationId == locId }
-                                    ?: return@forEach
+                            // Replace existing shift for same weekday; otherwise add.
+                            val idx = worker.getShifts().indexOfFirst { it.day == day }
+                            if (idx >= 0) worker.replaceShift(idx, shift) else worker.addShift(shift)
 
-                                val shift = WorkShift(day = day, start = start, end = end, location = loc, hourlyWage = wage)
-
-                                // maks 1 skift pr ukedag -> erstatt hvis finnes
-                                val idx = worker.getShifts().indexOfFirst { it.day == day }
-                                if (idx >= 0) worker.replaceShift(idx, shift) else worker.addShift(shift)
-
-                                // link worker til location, så "Workers (N)" vises i Location-lista
-                                val alreadyLinked = loc.getWorkers().any { it.workerId == worker.workerId }
-                                if (!alreadyLinked) loc.addWorker(worker)
-                            }
+                            // Ensure location lists this worker once.
+                            if (loc.getWorkers().none { it.workerId == worker.workerId }) loc.addWorker(worker)
                         }
                     }
                 }
@@ -82,4 +77,7 @@ object WorkerLoader {
             it.name == up || it.name.startsWith(up) || it.name.take(3) == up.take(3)
         }
     }
+
+    private fun resolveLocation(key: String, svc: LocationService) =
+        svc.get(key) ?: svc.listAll().firstOrNull { it.name?.equals(key, true) == true }
 }

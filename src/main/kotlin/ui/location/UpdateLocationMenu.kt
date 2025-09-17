@@ -8,6 +8,11 @@ import org.example.services.MineralService
 import org.example.ui.common.ConsoleIO
 import org.example.utils.fromInput
 
+/**
+ * Menu to update a location (edit info, add/remove minerals).
+ * Uses LocationService for CRUD operations.
+ * Uses MineralService to list/select minerals to add.
+ */
 class UpdateLocationMenu(
     private val locationService: LocationService,
     mineralService: MineralService
@@ -15,6 +20,7 @@ class UpdateLocationMenu(
     private val addMineralToLocationMenu = AddMineralToLocationMenu(locationService, mineralService)
     private val options = UpdateLocationMenuAction.entries.map { "${it.shortcut} - ${it.label}" }
 
+    /** Main loop; returns when user chooses Back. */
     fun run() {
         println("\n=== Update Location ===")
         val id = ConsoleIO.nonEmpty("Enter location id")
@@ -25,7 +31,6 @@ class UpdateLocationMenu(
         }
 
         while (true) {
-            // Vis alltid fersk info i tittelen
             val headerName = loc.name ?: "(unnamed)"
             ConsoleIO.showMenu("Update $headerName [${loc.locationId}]", options)
 
@@ -87,7 +92,7 @@ class UpdateLocationMenu(
             } else loc.longitude = v
         }
 
-        println("✔ Location updated.")
+        println("Location updated.")
     }
 
 
@@ -95,7 +100,7 @@ class UpdateLocationMenu(
     private fun removeMineral(loc: Location) {
         val name = ConsoleIO.nonEmpty("Mineral name to remove").trim()
         val ok = locationService.removeMineral(loc.locationId, name)
-        if (ok) println("✔ Removed '$name' from ${loc.name ?: loc.locationId}.")
+        if (ok) println("Removed '$name' from ${loc.name ?: loc.locationId}.")
         else    println("Mineral '$name' not found at ${loc.name ?: loc.locationId}.")
     }
 }

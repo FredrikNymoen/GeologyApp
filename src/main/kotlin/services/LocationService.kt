@@ -6,6 +6,11 @@ import org.example.models.Worker
 import org.example.utils.LocationLoader
 import java.util.concurrent.atomic.AtomicInteger
 
+/**
+ * Service to manage locations.
+ * Provides methods to list, add, get, and delete locations.
+ * Also manages minerals and workers associated with each location.
+ */
 class LocationService {
 
     private val locations = mutableListOf<Location>()
@@ -15,19 +20,20 @@ class LocationService {
         locations += LocationLoader.loadFromFile()
     }
 
+    /** Generates the next unique ID as a string. */
     private fun nextId(): String = seq.incrementAndGet().toString();
 
-    // --- CRUD on locations list ---
+    /** Returns all locations as a list. */
     fun listAll(): List<Location> {
         return locations
     }
 
-
+    /** Get a location by its ID (case-insensitive). Returns null if not found. */
     fun get(id : String): Location? {
         return locations.find { it.locationId.equals(id, ignoreCase = true) }
     }
 
-
+    /** Add a new location. Location names must be unique (case-insensitive). */
     fun add(
         name: String,
         description: String?,
@@ -47,6 +53,7 @@ class LocationService {
         return loc
     }
 
+    /** Delete a location by ID (case-insensitive). Returns true if any removed. */
     fun delete(id: String): Boolean {
         return locations.removeIf { it.locationId.equals(id, ignoreCase = true) }
     }
@@ -76,41 +83,6 @@ class LocationService {
         val target = loc.getMinerals().firstOrNull { it.name?.equals(mineralName, true) == true }
             ?: return false
         loc.removeMineral(target)
-        return true
-    }
-
-    /** Update the first mineral matching name using a patch lambda. */
-    fun updateMineral(locationId: String, mineralName: String, patch: Mineral.() -> Unit): Boolean {
-        val loc = get(locationId) ?: error("Location '${get(locationId)?.name}' not found.")
-        val target = loc.getMinerals().firstOrNull { it.name?.equals(mineralName, true) == true }
-            ?: return false
-        target.patch()
-        return true
-    }
-
-    // -------- Workers --------
-
-    /** List workers at a location (empty if none or location missing). */
-    fun listWorkersAtLocation(locationId: String): List<Worker> {
-        val loc = get(locationId) ?: return emptyList()
-        return loc.getWorkers()
-    }
-
-    /** Add a worker to a location (prevents duplicates by employeeId). */
-    fun addWorkerToLocation(locationId: String, worker: Worker) : Boolean {
-        val loc = get(locationId) ?: error("Location '${get(locationId)?.name}' not found.")
-        val exists = loc.getWorkers().any { it.workerId == worker.workerId }
-        if (exists) return false
-        loc.addWorker(worker)
-        return true
-    }
-
-    /** Remove a worker by employeeId at a location. Returns true if any removed. */
-    fun removeWorkerById(locationId : String, workerId: String): Boolean {
-        val loc = get(locationId) ?: error("Location '${get(locationId)?.name}' not found.")
-        val target = loc.getWorkers().firstOrNull { it.workerId == workerId }
-            ?: return false
-        loc.removeWorker(target)
         return true
     }
 

@@ -1,12 +1,20 @@
 package org.example.ui.location
 
-import org.example.models.Location
 import org.example.services.LocationService
 import org.example.ui.common.ConsoleIO
 
+/**
+ * Menu to add a new location.
+ * Prompts for name, description, latitude, and longitude.
+ * Validates that name is not empty, latitude is between -90 and 90,
+ * and longitude is between -180 and 180.
+ * Calls LocationService to create the location.
+ */
 class AddLocationMenu(
     private val locationService: LocationService
 ) {
+
+    /** Runs the add location menu. */
     fun run() {
         println("\n=== Add Location ===")
 

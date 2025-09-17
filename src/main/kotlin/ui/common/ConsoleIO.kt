@@ -1,13 +1,18 @@
 package org.example.ui.common
 
+/**
+ * Console input/output helper functions.
+ */
 object ConsoleIO {
 
+    /** Show a menu with title and items, then prompt for choice. */
     fun showMenu(title: String, items: List<String>) {
         println("\n=== $title ===")
         items.forEach { println(it) }
         print("Choose: ")
     }
 
+    /** Read line, trim whitespace, convert to lowercase. */
     fun choice(): String = readln().trim().lowercase() //waits on enter
 
 
@@ -43,16 +48,6 @@ object ConsoleIO {
         }
     }
 
-    /** Optional double in range: blank = keep current (returns null). */
-    fun doubleInRangeOrKeep(label: String, min: Double, max: Double): Double? {
-        while (true) {
-            val raw = prompt(label)
-            if (raw.isBlank()) return null
-            val v = parseDoubleLoose(raw)
-            if (v != null && v in min..max) return v
-            println("Please enter a number between $min and $max, or press Enter to keep current.")
-        }
-    }
 
     /** Parse comma or slash separated list ("" -> emptyList). */
     fun parseList(input: String): List<String> =
@@ -60,7 +55,4 @@ object ConsoleIO {
             .map { it.trim() }
             .filter { it.isNotEmpty() }
 
-    /** Prompt and parse list (blank -> emptyList). */
-    fun promptList(label: String): List<String> =
-        parseList(prompt(label))
 }

@@ -1,6 +1,5 @@
 package org.example.services
 
-import org.example.models.WorkShift
 import org.example.models.Worker
 import org.example.utils.WorkerLoader
 import java.time.DayOfWeek
@@ -8,8 +7,12 @@ import java.time.temporal.ChronoUnit
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.round
 
+/**
+ * Service class to manage [Worker] entities: create, read, update, delete,
+ * and calculate paychecks based on their shifts.
+ */
 class WorkerService (
-    private val locationService: LocationService
+    locationService: LocationService
 ) {
 
     private val workers = mutableListOf<Worker>();
@@ -22,7 +25,7 @@ class WorkerService (
     /** ~ average weeks per month: 52 weeks / 12 months */
     private val weeksPerMonth = 52.0 / 12.0
 
-
+    /** Generate the next worker ID as a string. */
     private fun nextId(): String = seq.incrementAndGet().toString()
 
 
@@ -82,26 +85,6 @@ class WorkerService (
             w.getShifts().any { it.location.locationId.equals(locationId, ignoreCase = true) }
         }
 
-    /**  -------  Methods for calculating paychecks --------*/
-
-    // ---- enforce: max one shift per weekday ----
-
-    /**
-     * Set (upsert) the shift for a given weekday.
-     * If a shift already exists on that weekday, it will be replaced when replaceIfExists=true (default).
-     * If replaceIfExists=false and a shift exists, throws.
-     */
-    fun setShift(workerId: String, shift: WorkShift, replaceIfExists: Boolean = true) {
-        val w = get(workerId) ?: error("Worker not found.")
-        val idx = w.getShifts().indexOfFirst { it.day == shift.day }
-        if (idx >= 0) {
-            require(replaceIfExists) { "A shift for ${shift.day} already exists." }
-            w.replaceShift(idx, shift)
-        } else {
-            w.addShift(shift)
-        }
-    }
-
     /** Remove the shift for a given weekday. Returns true if removed. */
     fun removeShift(workerId: String, day: DayOfWeek): Boolean {
         val w = get(workerId) ?: error("Worker not found.")
@@ -111,16 +94,6 @@ class WorkerService (
 
     // ---- weekly & monthly (avg) calculations ----
 
-    /** Total weekly hours from the current one-shift-per-day schedule. */
-    fun weeklyHours(worker: Worker): Double {
-        var total = 0.0
-        for (shift in worker.getShifts()) {
-            val minutes = ChronoUnit.MINUTES.between(shift.start, shift.end)
-            require(minutes > 0) { "Shift end must be after start." }
-            total += minutes / 60.0
-        }
-        return round2(total)
-    }
 
     /** Weekly pay: sums (hours × shift.hourlyWage) across the week. */
     fun weeklyPay(worker: Worker): Double {
@@ -144,5 +117,6 @@ class WorkerService (
     fun calculatePaychecksForAllTypical(): Map<Worker, Double> =
         workers.associateWith { w -> monthlyPayTypical(w) }
 
+    /** Rounds a double to 2 decimal places, e.g. for currency values. */
     private fun round2(x: Double): Double = round(x * 100.0) / 100.0
 }

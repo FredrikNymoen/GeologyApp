@@ -12,6 +12,11 @@ import java.time.DayOfWeek
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
+/**
+ * Console submenu to update a single [Worker]: edit basic info, add/replace/remove
+ * one weekly shift per weekday, and list current shifts. Input is validated and
+ * re-prompted where sensible; actions are idempotent and safe to repeat.
+ */
 class UpdateWorkerMenu(
     private val workerService: WorkerService,
     private val locationService: LocationService
@@ -19,20 +24,25 @@ class UpdateWorkerMenu(
     private val options = UpdateWorkerMenuAction.entries.map { "${it.shortcut} - ${it.label}" }
     private val timeFmt: DateTimeFormatter = DateTimeFormatter.ofPattern("H:mm")
 
-    /** Runs the update flow for a single worker. */
+    /** Runs the update loop for the chosen worker (returns on Back). */
     fun run() {
         println("\n=== Update Worker ===")
-        val workerId = ConsoleIO.nonEmpty("Worker ID")
-        if (workerService.get(workerId) == null) {
+        val workerId = ConsoleIO.nonEmpty("Worker ID").trim()
+        val initial = workerService.get(workerId)
+        if (initial == null) {
             println("Worker not found.")
             return
         }
 
         while (true) {
-            val current = workerService.get(workerId)!! // always show latest name
+            // Fetch fresh each turn in case we mutated the worker
+            val current = workerService.get(workerId) ?: run {
+                println("Worker deleted while editing; returning.")
+                return
+            }
             ConsoleIO.showMenu("Update ${current.getFullName()} [${current.workerId}]", options)
 
-            val action = fromInput<UpdateWorkerMenuAction>(ConsoleIO.choice())
+            val action = fromInput<UpdateWorkerMenuAction>(ConsoleIO.choice().trim())
             if (action == null) {
                 println("Invalid choice. Please try again.")
                 continue
@@ -42,7 +52,7 @@ class UpdateWorkerMenu(
                 UpdateWorkerMenuAction.EditWorkerInformation -> editWorkerInfo(workerId)
                 UpdateWorkerMenuAction.AddOrReplaceShift    -> addOrReplaceShift(workerId)
                 UpdateWorkerMenuAction.RemoveShift          -> removeShift(workerId)
-                UpdateWorkerMenuAction.ListShifts           -> printShifts(workerService.get(workerId)!!)
+                UpdateWorkerMenuAction.ListShifts           -> printShifts(current)
                 UpdateWorkerMenuAction.Back                 -> return
             }
         }
@@ -50,10 +60,9 @@ class UpdateWorkerMenu(
 
     // -------- Actions --------
 
-    /** Edit first name, last name, phone in one go (blank = keep current). */
+    /** Edit first/last/phone (blank keeps current). */
     private fun editWorkerInfo(workerId: String) {
-        val w = workerService.get(workerId)!!
-
+        val w = workerService.get(workerId) ?: return
         println("\n--- Edit Worker Information ---")
         println("Leave blank to keep current value.")
 
@@ -83,7 +92,7 @@ class UpdateWorkerMenu(
         val wage = promptNonNegativeDouble("Hourly wage")
 
         workerService.update(workerId) {
-            val idx = getShifts().indexOfFirst { it.day == day } // find existing shift that day
+            val idx = getShifts().indexOfFirst { it.day == day } // max 1 per weekday
             val newShift = WorkShift(day = day, start = start, end = end, location = location, hourlyWage = wage)
             if (idx >= 0) {
                 replaceShift(idx, newShift)
@@ -122,22 +131,18 @@ class UpdateWorkerMenu(
     // -------- Prompts --------
 
     /** Returns null to cancel. */
-    private fun promptOptional(label: String): String? {
-        val v = ConsoleIO.prompt(label)
-        return v.ifBlank { null }
-    }
+    private fun promptOptional(label: String): String? =
+        ConsoleIO.prompt(label).ifBlank { null }
 
-    /** Accepts 1..7 (Mon..Sun) or names (Mon/MONDAY). Blank cancels. */
+    /** Accepts 1..7 (Mon..Sun) or names/prefixes (Mon/MONDAY). Blank cancels. */
     private fun promptDayOfWeek(): DayOfWeek? {
         val raw = ConsoleIO.prompt("Day (1=Mon … 7=Sun, or name; blank=cancel)")
         if (raw.isBlank()) return null
 
-        raw.toIntOrNull()?.let { n ->
-            if (n in 1..7) return DayOfWeek.of(n)
-        }
+        raw.toIntOrNull()?.let { n -> if (n in 1..7) return DayOfWeek.of(n) }
         val up = raw.trim().uppercase()
         return DayOfWeek.entries.firstOrNull {
-            it.name == up || it.name.startsWith(up) || it.name.substring(0, 3) == up.take(3)
+            it.name == up || it.name.startsWith(up) || it.name.take(3) == up.take(3)
         }.also {
             if (it == null) println("Unrecognized day: '$raw'")
         }
@@ -148,11 +153,9 @@ class UpdateWorkerMenu(
         while (true) {
             val raw = ConsoleIO.prompt("$label (blank=cancel)")
             if (raw.isBlank()) return null
-            try {
-                return LocalTime.parse(raw.trim(), timeFmt)
-            } catch (_: Exception) {
-                println("Invalid time. Use H:mm, e.g., 8:00 or 15:30.")
-            }
+            runCatching { LocalTime.parse(raw.trim(), timeFmt) }
+                .onSuccess { return it }
+                .onFailure { println("Invalid time. Use H:mm, e.g., 8:00 or 15:30.") }
         }
     }
 
@@ -166,19 +169,19 @@ class UpdateWorkerMenu(
         }
     }
 
-    /** Lookup by ID first, then by name (case-insensitive). Blank cancels. */
+    /** Lookup by exact ID (case-insensitive) or by name (case-insensitive). Blank cancels. */
     private fun promptLocation(): Location? {
-        val key = ConsoleIO.prompt("Location ID or name (blank=cancel)")
+        val key = ConsoleIO.prompt("Location ID or name (blank=cancel)").trim()
         if (key.isBlank()) return null
 
-        // Try by exact ID
-        locationService.listAll().firstOrNull { it.locationId == key }?.let { return it }
-
-        // Try by name (case-insensitive)
-        val byName = locationService.get(key)
-        if (byName != null) return byName
-
-        println("Location not found: '$key'.")
-        return null
+        // Try ID first (case-insensitive), then by name (case-insensitive)
+        return locationService.listAll().firstOrNull {
+            it.locationId.equals(key, ignoreCase = true)
+        } ?: locationService.listAll().firstOrNull {
+            it.name?.equals(key, ignoreCase = true) == true
+        } ?: run {
+            println("Location not found: '$key'.")
+            null
+        }
     }
 }

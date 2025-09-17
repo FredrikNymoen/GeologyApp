@@ -7,6 +7,11 @@ import org.example.services.WorkerService
 import org.example.ui.common.ConsoleIO
 import org.example.utils.fromInput
 
+/**
+ * Menu to manage locations.
+ * Uses LocationService for CRUD operations.
+ * Uses WorkerService to list workers at a location.
+ */
 class LocationMenu (
     private val locationService: LocationService,
     mineralService: MineralService,
@@ -19,6 +24,7 @@ class LocationMenu (
 
 
 
+    /** Main loop; returns when user chooses Back. */
     fun run() {
 
         while (true) {

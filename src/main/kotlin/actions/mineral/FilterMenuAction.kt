@@ -2,6 +2,9 @@ package org.example.actions.mineral
 
 import org.example.actions.MenuAction
 
+/**
+ * Actions available in the filter menu for minerals.
+ */
 enum class FilterMenuAction(
     override val label: String,
     override val shortcut: String) : MenuAction {

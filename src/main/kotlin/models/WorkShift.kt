@@ -5,6 +5,8 @@ import java.time.LocalTime
 import java.time.temporal.ChronoUnit
 import kotlin.math.roundToInt
 
+/** A single work shift for a [Worker], on a specific day of the week, with start/end times,
+ *  location, and hourly wage. */
 class WorkShift (
     val day: DayOfWeek,
     val start: LocalTime,
